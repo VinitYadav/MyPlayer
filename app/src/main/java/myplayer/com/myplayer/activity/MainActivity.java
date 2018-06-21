@@ -6,16 +6,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import myplayer.com.myplayer.R;
+import myplayer.com.myplayer.adapter.PlayListAdapter;
+import myplayer.com.myplayer.databinding.ActivityMainBinding;
 import myplayer.com.myplayer.model.Audio;
 import myplayer.com.myplayer.service.MediaPlayerService;
 
@@ -24,13 +28,14 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayerService player;
     boolean serviceBound = false;
     private ArrayList<Audio> audioList;
+    private PlayListAdapter playListAdapter;
+    private ActivityMainBinding mBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         loadAudio();
-        playAudio(audioList.get(0).getData());
     }
 
     @Override
@@ -109,12 +114,24 @@ public class MainActivity extends AppCompatActivity {
                 String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
                 String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
                 String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                String albumPath = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
 
                 // Save to audioList
-                audioList.add(new Audio(data, title, album, artist));
+                audioList.add(new Audio(data, title, album, artist, albumPath));
             }
             cursor.close();
         }
+        setAdapter();
+    }
 
+    /**
+     * Set adapter
+     */
+    private void setAdapter() {
+        if (audioList != null && audioList.size() > 0) {
+            mBinding.recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+            playListAdapter = new PlayListAdapter(MainActivity.this, audioList);
+            mBinding.recyclerView.setAdapter(playListAdapter);
+        }
     }
 }
