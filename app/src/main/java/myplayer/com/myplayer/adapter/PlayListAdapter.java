@@ -9,7 +9,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 import myplayer.com.myplayer.R;
 import myplayer.com.myplayer.model.Audio;
@@ -36,6 +40,24 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.textViewName.setText(mList.get(position).getTitle());
         holder.textViewTitle.setText(mList.get(position).getArtist());
+        long duration = Long.parseLong(mList.get(position).getDuration());
+        holder.textViewDuration.setText(getDuration(mList.get(position).getDuration()));
+    }
+
+    /**
+     * Get duration
+     */
+    private String getDuration(String duration) {
+        SimpleDateFormat sdf = new SimpleDateFormat("mm", Locale.US);
+        try {
+            Date dt = sdf.parse(duration);
+            sdf = new SimpleDateFormat("HH:mm", Locale.US);
+            //System.out.println(sdf.format(dt));
+            return sdf.format(dt);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     @Override
@@ -48,12 +70,14 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         private ImageView imageViewPlay;
         private TextView textViewName;
         private TextView textViewTitle;
+        private TextView textViewDuration;
 
         ViewHolder(View view) {
             super(view);
             imageViewPlay = view.findViewById(R.id.imageViewPlay);
             textViewName = view.findViewById(R.id.textViewName);
             textViewTitle = view.findViewById(R.id.textViewTitle);
+            textViewDuration = view.findViewById(R.id.textViewDuration);
         }
     }
 }

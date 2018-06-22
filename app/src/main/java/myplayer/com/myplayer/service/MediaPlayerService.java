@@ -11,12 +11,15 @@ import android.util.Log;
 
 import java.io.IOException;
 
+import myplayer.com.myplayer.listener.ServiceCallbacks;
+
+
 public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener,
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
         MediaPlayer.OnSeekCompleteListener, MediaPlayer.OnInfoListener,
         MediaPlayer.OnBufferingUpdateListener, AudioManager.OnAudioFocusChangeListener {
 
-    private MediaPlayer mediaPlayer;
+    public MediaPlayer mediaPlayer;
     //path to the audio file
     private String mediaFile;
     //Used to pause/resume MediaPlayer
@@ -24,6 +27,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     private AudioManager audioManager;
     // Binder given to clients
     private final IBinder iBinder = new LocalBinder();
+    private ServiceCallbacks serviceCallbacks;
 
     public MediaPlayerService() {
     }
@@ -104,6 +108,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         stopMedia();
         //stop the service
         stopSelf();
+        serviceCallbacks.doSomething();
     }
 
     @Override
@@ -167,7 +172,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /**
      * Play media
      */
-    private void playMedia() {
+    public void playMedia() {
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
         }
@@ -229,5 +234,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         public MediaPlayerService getService() {
             return MediaPlayerService.this;
         }
+    }
+
+    public void setCallbacks(ServiceCallbacks callbacks) {
+        serviceCallbacks = callbacks;
     }
 }
