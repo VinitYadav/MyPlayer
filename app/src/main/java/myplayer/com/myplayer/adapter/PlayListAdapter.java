@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import myplayer.com.myplayer.R;
+import myplayer.com.myplayer.activity.MainActivity;
 import myplayer.com.myplayer.model.Audio;
 
 public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHolder> {
@@ -78,6 +79,14 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
             textViewName = view.findViewById(R.id.textViewName);
             textViewTitle = view.findViewById(R.id.textViewTitle);
             textViewDuration = view.findViewById(R.id.textViewDuration);
+
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ((MainActivity) mActivity).setCurrentSong(getAdapterPosition());
+                    ((MainActivity) mActivity).playSelectSong();
+                }
+            });
         }
     }
 }

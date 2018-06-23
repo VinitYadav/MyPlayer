@@ -106,9 +106,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void onCompletion(MediaPlayer mp) {
         //stop media
         stopMedia();
+        serviceCallbacks.onComplete();
         //stop the service
         stopSelf();
-        serviceCallbacks.doSomething();
+
     }
 
     @Override
@@ -181,7 +182,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /**
      * Stop media
      */
-    private void stopMedia() {
+    public void stopMedia() {
         if (mediaPlayer == null) return;
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
@@ -191,17 +192,18 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     /**
      * Pause media
      */
-    private void pauseMedia() {
+    public void pauseMedia() {
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             resumePosition = mediaPlayer.getCurrentPosition();
+            int i = resumePosition;
         }
     }
 
     /**
      * Resume media
      */
-    private void resumeMedia() {
+    public void resumeMedia() {
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.seekTo(resumePosition);
             mediaPlayer.start();

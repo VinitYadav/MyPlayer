@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -33,9 +34,11 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
     private ArrayList<Audio> audioList;
     private PlayListAdapter playListAdapter;
     private ActivityMainBinding mBinding;
-    private final int PLAY = 2;
+    private final int PLAY = 1;
     private final int PAUSE = 2;
-    public int currentSong = 0;
+    private int currentSong = 0;
+    private final int DELAY_TIME = 500;
+    private boolean isPauseResume;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +70,12 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
         }
     }
 
+    @Override
+    public void onComplete() {
+        serviceBound = false;
+        changePlayPauseIcon(PLAY);
+    }
+
     /**
      * Binding to the AudioPlayer Service
      */
@@ -92,7 +101,22 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
      * Click on play & pause button
      */
     public void onClickPlay() {
-        playAudio(audioList.get(currentSong).getData());
+        if (player != null) {
+            if (player.mediaPlayer.isPlaying()) {
+                player.pauseMedia();
+                changePlayPauseIcon(PLAY);
+                isPauseResume = !isPauseResume;
+            } else {
+                if (isPauseResume) {
+                    player.resumeMedia();
+                    changePlayPauseIcon(PAUSE);
+                    isPauseResume = !isPauseResume;
+                } else {
+                    playSelectSong();
+                }
+            }
+        }
+
     }
 
     /**
@@ -101,17 +125,26 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
     public void onClickPreviousNext(int which) {
         switch (which) {
             case 1://previous
-                if (currentSong > 0) {
-                    currentSong--;
-                    playAudio(audioList.get(currentSong).getData());
-                }
+                final int previous = previousSong();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isDestroyed()) {
+                            playAudio(audioList.get(previous).getData());
+                        }
+                    }
+                }, DELAY_TIME);
                 break;
             case 2://next
-                int size = audioList.size();
-                if (currentSong < size) {
-                    currentSong++;
-                    playAudio(audioList.get(currentSong).getData());
-                }
+                final int next = nextSong();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!isDestroyed()) {
+                            playAudio(audioList.get(next).getData());
+                        }
+                    }
+                }, DELAY_TIME);
                 break;
         }
     }
@@ -119,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
     /**
      * Play audio
      */
-    private void playAudio(String media) {
+    private void playAudio(final String media) {
         //Check is service is active
         if (!serviceBound) {
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
@@ -127,15 +160,10 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
             startService(playerIntent);
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
             changePlayPauseIcon(PAUSE);
+            setSongTitle();
         } else {
             //Service is active
             //Send media with BroadcastReceiver
-            try {
-                player.mediaPlayer.setDataSource(media);
-                player.playMedia();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -193,7 +221,17 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
         if (audioList == null || audioList.size() == 0) {
             return;
         }
-        mBinding.textViewName.setText(audioList.get(0).getTitle());
+        setSongTitle();
+    }
+
+    /**
+     * Set song title
+     */
+    private void setSongTitle() {
+        if (audioList != null && audioList.size() > 0) {
+            mBinding.textViewName.setText(audioList
+                    .get(getCurrentSong()).getTitle());
+        }
     }
 
     /**
@@ -210,10 +248,67 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
         }
     }
 
-    @Override
-    public void doSomething() {
-        serviceBound = false;
+    /**
+     * Get current song position
+     */
+    private int getCurrentSong() {
+        return currentSong;
     }
 
+    /**
+     * Get current song position
+     */
+    public void setCurrentSong(int position) {
+        changePlayPauseIcon(PLAY);
+        serviceBound = false;
+        currentSong = position;
+    }
+
+    /**
+     * Get previous song position
+     */
+    private int previousSong() {
+        changePlayPauseIcon(PLAY);
+        serviceBound = false;
+        player.stopMedia();
+        if (currentSong > 0) {
+            currentSong--;
+        }
+        return currentSong;
+    }
+
+    /**
+     * Get next song position
+     */
+    private int nextSong() {
+        changePlayPauseIcon(PLAY);
+        serviceBound = false;
+        player.stopMedia();
+        int size = audioList.size();
+        if (currentSong < size) {
+            currentSong++;
+        } else {
+            currentSong = 0;
+        }
+        return currentSong;
+    }
+
+    /**
+     * Play select song from list
+     */
+    public void playSelectSong() {
+        isPauseResume = false;
+        if (player != null) {
+            player.stopMedia();
+        }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!isDestroyed()) {
+                    playAudio(audioList.get(getCurrentSong()).getData());
+                }
+            }
+        }, DELAY_TIME);
+    }
 
 }
