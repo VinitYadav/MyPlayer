@@ -21,8 +21,9 @@ import myplayer.com.myplayer.model.Audio;
 
 public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHolder> {
 
-    private ArrayList<Audio> mList = new ArrayList<>();
+    private ArrayList<Audio> mList;
     private Activity mActivity;
+    private int selected = 0;
 
     public PlayListAdapter(Activity activity, ArrayList<Audio> list) {
         this.mList = list;
@@ -43,6 +44,11 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         holder.textViewTitle.setText(mList.get(position).getArtist());
         long duration = Long.parseLong(mList.get(position).getDuration());
         holder.textViewDuration.setText(getDuration(mList.get(position).getDuration()));
+        if (mList.get(position).isSelect()) {
+            holder.imageViewPlay.setImageResource(R.drawable.pause_icon);
+        } else {
+            holder.imageViewPlay.setImageResource(R.drawable.play_icon);
+        }
     }
 
     /**
@@ -83,6 +89,19 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    if (mList.get(getAdapterPosition()).isSelect()) {
+                        mList.get(getAdapterPosition()).setSelect(false);
+                    } else {
+                        mList.get(getAdapterPosition()).setSelect(true);
+                    }
+                    if (mList.get(selected).isSelect()) {
+                        mList.get(selected).setSelect(false);
+                    } else {
+                        mList.get(selected).setSelect(true);
+                    }
+                    notifyItemChanged(selected);
+                    notifyItemChanged(getAdapterPosition());
+                    selected = getAdapterPosition();
                     ((MainActivity) mActivity).setCurrentSong(getAdapterPosition());
                     ((MainActivity) mActivity).playSelectSong();
                 }

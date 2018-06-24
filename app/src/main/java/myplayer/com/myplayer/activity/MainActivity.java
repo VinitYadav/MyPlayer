@@ -115,6 +115,8 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
                     playSelectSong();
                 }
             }
+        } else {
+            playSelectSong();
         }
 
     }
@@ -188,7 +190,8 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
                 String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
 
                 // Save to audioList
-                audioList.add(new Audio(data, title, album, artist, duration));
+                audioList.add(new Audio(data, title, album,
+                        artist, duration, false));
             }
             cursor.close();
         }
@@ -297,6 +300,9 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
      * Play select song from list
      */
     public void playSelectSong() {
+        if (getCurrentSong() == 0) {
+            audioList.get(getCurrentSong()).setSelect(true);
+        }
         isPauseResume = false;
         if (player != null) {
             player.stopMedia();

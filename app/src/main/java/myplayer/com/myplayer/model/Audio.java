@@ -9,13 +9,16 @@ public class Audio implements Serializable {
     private String album;
     private String artist;
     private String duration;
+    private boolean isSelect;
 
-    public Audio(String data, String title, String album, String artist, String duration) {
+    public Audio(String data, String title, String album,
+                 String artist, String duration, boolean isSelect) {
         this.data = data;
         this.title = title;
         this.album = album;
         this.artist = artist;
         this.duration = duration;
+        this.isSelect = isSelect;
     }
 
     public String getData() {
@@ -56,5 +59,13 @@ public class Audio implements Serializable {
 
     public void setDuration(String duration) {
         this.duration = duration;
+    }
+
+    public boolean isSelect() {
+        return isSelect;
+    }
+
+    public void setSelect(boolean select) {
+        isSelect = select;
     }
 }
