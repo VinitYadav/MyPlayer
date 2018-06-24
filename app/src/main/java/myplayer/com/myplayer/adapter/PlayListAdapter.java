@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import myplayer.com.myplayer.R;
 import myplayer.com.myplayer.activity.MainActivity;
@@ -43,7 +44,8 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         holder.textViewName.setText(mList.get(position).getTitle());
         holder.textViewTitle.setText(mList.get(position).getArtist());
         long duration = Long.parseLong(mList.get(position).getDuration());
-        holder.textViewDuration.setText(getDuration(mList.get(position).getDuration()));
+        holder.textViewDuration.
+                setText(getDuration(mList.get(position).getDuration()));
         if (mList.get(position).isSelect()) {
             holder.imageViewPlay.setImageResource(R.drawable.pause_icon);
         } else {
@@ -51,25 +53,35 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
         }
     }
 
+    @Override
+    public int getItemCount() {
+        return mList.size();
+    }
+
+    /**
+     * Set play pause icon on current playing song
+     */
+    public void setPlayPause(boolean flag) {
+        if (flag) {//pause
+            mList.get(selected).setSelect(false);
+        } else {//resume
+            mList.get(selected).setSelect(true);
+        }
+        notifyItemChanged(selected);
+    }
+
     /**
      * Get duration
      */
     private String getDuration(String duration) {
-        SimpleDateFormat sdf = new SimpleDateFormat("mm", Locale.US);
-        try {
-            Date dt = sdf.parse(duration);
-            sdf = new SimpleDateFormat("HH:mm", Locale.US);
-            //System.out.println(sdf.format(dt));
-            return sdf.format(dt);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    @Override
-    public int getItemCount() {
-        return mList.size();
+        int temp = Integer.parseInt(duration);
+        String time = String.format(Locale.US, "%02d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(temp),
+                TimeUnit.MILLISECONDS.toSeconds(temp) -
+                        TimeUnit.MINUTES.toSeconds
+                                (TimeUnit.MILLISECONDS.toMinutes(temp))
+        );
+        return time;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -89,21 +101,25 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (mList.get(getAdapterPosition()).isSelect()) {
-                        mList.get(getAdapterPosition()).setSelect(false);
+                    if (selected == getAdapterPosition()) {
+                        ((MainActivity) mActivity).onClickPlay();
                     } else {
-                        mList.get(getAdapterPosition()).setSelect(true);
+                        if (mList.get(getAdapterPosition()).isSelect()) {
+                            mList.get(getAdapterPosition()).setSelect(false);
+                        } else {
+                            mList.get(getAdapterPosition()).setSelect(true);
+                        }
+                        if (mList.get(selected).isSelect()) {
+                            mList.get(selected).setSelect(false);
+                        } else {
+                            mList.get(selected).setSelect(true);
+                        }
+                        notifyItemChanged(selected);
+                        notifyItemChanged(getAdapterPosition());
+                        selected = getAdapterPosition();
+                        ((MainActivity) mActivity).setCurrentSong(getAdapterPosition());
+                        ((MainActivity) mActivity).playSelectSong();
                     }
-                    if (mList.get(selected).isSelect()) {
-                        mList.get(selected).setSelect(false);
-                    } else {
-                        mList.get(selected).setSelect(true);
-                    }
-                    notifyItemChanged(selected);
-                    notifyItemChanged(getAdapterPosition());
-                    selected = getAdapterPosition();
-                    ((MainActivity) mActivity).setCurrentSong(getAdapterPosition());
-                    ((MainActivity) mActivity).playSelectSong();
                 }
             });
         }

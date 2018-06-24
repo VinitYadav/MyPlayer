@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#26262E</color>
     <color name="colorPrimaryDark">#26262E</color>
-    <color name="colorAccent">#94335C</color>
+    <color name="colorAccent">#ffffff</color>
     <color name="gradient">#c40024</color>
     <color name="white">#ffffff</color>
 </resources>

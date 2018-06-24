@@ -5,11 +5,10 @@
 
         <variable
             name="activity"
-            type="myplayer.com.myplayer.activity.MainActivity"/>
+            type="myplayer.com.myplayer.activity.MainActivity" />
     </data>
 
-    <RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,7 +22,7 @@
             android:layout_above="@+id/linearLayoutBottom"
             android:layout_margin="5dp"
             android:overScrollMode="never"
-            android:scrollbars="none"/>
+            android:scrollbars="none" />
 
         <LinearLayout
             android:id="@+id/linearLayoutBottom"
@@ -40,7 +39,7 @@
                 android:background="@drawable/progressbar"
                 android:indeterminate="false"
                 android:max="100"
-                android:progress="50"/>
+                android:progress="0" />
 
             <TextView
                 android:id="@+id/textViewName"
@@ -48,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:textColor="@color/white"
-                android:textSize="14dp"/>
+                android:textSize="14dp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -62,7 +61,7 @@
                     android:layout_gravity="center"
                     android:onClick='@{()->activity.onClickPreviousNext(1)}'
                     android:padding="5dp"
-                    android:src="@drawable/previous_icon"/>
+                    android:src="@drawable/previous_icon" />
 
                 <ImageView
                     android:id="@+id/imageViewPlay"
@@ -71,7 +70,7 @@
                     android:layout_gravity="center"
                     android:onClick="@{()->activity.onClickPlay()}"
                     android:padding="5dp"
-                    android:src="@drawable/play_circle_icon"/>
+                    android:src="@drawable/play_circle_icon" />
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -79,7 +78,7 @@
                     android:layout_gravity="center"
                     android:onClick='@{()->activity.onClickPreviousNext(2)}'
                     android:padding="5dp"
-                    android:src="@drawable/next_icon"/>
+                    android:src="@drawable/next_icon" />
             </LinearLayout>
         </LinearLayout>
 
@@ -89,7 +88,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:text="No song available"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white" />
 
     </RelativeLayout>
 </layout>

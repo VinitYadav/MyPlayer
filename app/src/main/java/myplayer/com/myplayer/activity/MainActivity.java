@@ -39,11 +39,13 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
     private int currentSong = 0;
     private final int DELAY_TIME = 500;
     private boolean isPauseResume;
+    private boolean isStart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        mBinding = DataBindingUtil.setContentView(this,
+                R.layout.activity_main);
         mBinding.setActivity(this);
         loadAudio();
     }
@@ -106,11 +108,13 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
                 player.pauseMedia();
                 changePlayPauseIcon(PLAY);
                 isPauseResume = !isPauseResume;
+                playListAdapter.setPlayPause(true);
             } else {
                 if (isPauseResume) {
                     player.resumeMedia();
                     changePlayPauseIcon(PAUSE);
                     isPauseResume = !isPauseResume;
+                    playListAdapter.setPlayPause(false);
                 } else {
                     playSelectSong();
                 }
@@ -163,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
             changePlayPauseIcon(PAUSE);
             setSongTitle();
+            setProgressBar();
         } else {
             //Service is active
             //Send media with BroadcastReceiver
@@ -238,6 +243,33 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
     }
 
     /**
+     * Set progress bar
+     */
+    private void setProgressBar() {
+        final Handler progressBarHandler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (player != null && player.mediaPlayer != null) {
+                    int currentPosition = player.mediaPlayer.getCurrentPosition();
+                    mBinding.progressBar
+                            .setProgress(currentPosition);
+
+                    if (!isStart) {
+                        int duration = player.mediaPlayer.getDuration();
+                        isStart = true;
+                        mBinding.progressBar
+                                .setMax(duration);
+                    }
+                }
+                progressBarHandler.postDelayed(this, 50);
+            }
+        };
+        progressBarHandler.postDelayed(runnable, 0);
+
+    }
+
+    /**
      * Change play pause icon
      */
     private void changePlayPauseIcon(int which) {
@@ -300,6 +332,7 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
      * Play select song from list
      */
     public void playSelectSong() {
+        isStart = false;
         if (getCurrentSong() == 0) {
             audioList.get(getCurrentSong()).setSelect(true);
         }
@@ -316,5 +349,4 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
             }
         }, DELAY_TIME);
     }
-
 }
