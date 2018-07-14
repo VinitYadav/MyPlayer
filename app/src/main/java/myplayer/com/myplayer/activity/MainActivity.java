@@ -19,6 +19,8 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
 
 import myplayer.com.myplayer.R;
 import myplayer.com.myplayer.adapter.PlayListAdapter;
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
     private final int DELAY_TIME = 500;
     private boolean isPauseResume;
     private boolean isStart;
+    private boolean isHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +78,39 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
     @Override
     public void onComplete() {
         serviceBound = false;
-        changePlayPauseIcon(PLAY);
+        /*if (playListAdapter != null) {
+            int position = getCurrentSong();
+            if (position < playListAdapter.getList().size()) {
+                position++;
+            }
+            playListAdapter.setIsSelect(position);
+        }*/
+        onClickPreviousNext(2);
+    }
+
+    @Override
+    public void onDuration(int duration) {
+        isStart = false;
+        final Handler progressBarHandler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (player != null && player.mediaPlayer != null) {
+                    int currentPosition = player.mediaPlayer.getCurrentPosition();
+                    mBinding.progressBar
+                            .setProgress(currentPosition);
+
+                    if (!isStart) {
+                        int duration = player.mediaPlayer.getDuration();
+                        isStart = true;
+                        mBinding.progressBar
+                                .setMax(duration);
+                    }
+                }
+                progressBarHandler.postDelayed(this, 50);
+            }
+        };
+        progressBarHandler.postDelayed(runnable, 0);
     }
 
     /**
@@ -90,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
             serviceBound = true;
             player.setCallbacks(MainActivity.this);
 
-            Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MainActivity.this, "Service Bound", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -131,27 +166,52 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
     public void onClickPreviousNext(int which) {
         switch (which) {
             case 1://previous
-                final int previous = previousSong();
-                new Handler().postDelayed(new Runnable() {
+                int previous = previousSong();
+                playAudio(audioList.get(previous).getData());
+                /*new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (!isDestroyed()) {
                             playAudio(audioList.get(previous).getData());
                         }
                     }
-                }, DELAY_TIME);
+                }, DELAY_TIME);*/
                 break;
             case 2://next
-                final int next = nextSong();
-                new Handler().postDelayed(new Runnable() {
+                int next = nextSong();
+                playAudio(audioList.get(next).getData());
+                /*new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         if (!isDestroyed()) {
                             playAudio(audioList.get(next).getData());
                         }
                     }
-                }, DELAY_TIME);
+                }, DELAY_TIME);*/
                 break;
+        }
+    }
+
+    /**
+     * Click on shuffle icon
+     */
+    public void onClickShuffle() {
+        if (player != null) {
+            serviceBound = false;
+            player.stopMedia();
+            Random r = new Random();
+            currentSong = r.nextInt(audioList.size());
+            if (!isDestroyed()) {
+                playAudio(audioList.get(getCurrentSong()).getData());
+                playListAdapter.getList()
+                        .get(playListAdapter.selected).setSelect(false);
+                playListAdapter.notifyItemChanged(playListAdapter.selected);
+
+                playListAdapter.selected = getCurrentSong();
+                playListAdapter.getList()
+                        .get(playListAdapter.selected).setSelect(true);
+                playListAdapter.notifyItemChanged(playListAdapter.selected);
+            }
         }
     }
 
@@ -167,7 +227,6 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
             bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
             changePlayPauseIcon(PAUSE);
             setSongTitle();
-            setProgressBar();
         } else {
             //Service is active
             //Send media with BroadcastReceiver
@@ -246,6 +305,7 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
      * Set progress bar
      */
     private void setProgressBar() {
+        isStart = false;
         final Handler progressBarHandler = new Handler();
         Runnable runnable = new Runnable() {
             @Override
@@ -294,7 +354,6 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
      * Get current song position
      */
     public void setCurrentSong(int position) {
-        changePlayPauseIcon(PLAY);
         serviceBound = false;
         currentSong = position;
     }
@@ -303,7 +362,9 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
      * Get previous song position
      */
     private int previousSong() {
-        changePlayPauseIcon(PLAY);
+        if (playListAdapter != null) {
+            playListAdapter.clickPreviousNext(1);
+        }
         serviceBound = false;
         player.stopMedia();
         if (currentSong > 0) {
@@ -316,7 +377,9 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
      * Get next song position
      */
     private int nextSong() {
-        changePlayPauseIcon(PLAY);
+        if (playListAdapter != null) {
+            playListAdapter.clickPreviousNext(2);
+        }
         serviceBound = false;
         player.stopMedia();
         int size = audioList.size();
@@ -335,18 +398,22 @@ public class MainActivity extends AppCompatActivity implements ServiceCallbacks 
         isStart = false;
         if (getCurrentSong() == 0) {
             audioList.get(getCurrentSong()).setSelect(true);
+            playListAdapter.notifyItemChanged(getCurrentSong());
         }
         isPauseResume = false;
         if (player != null) {
             player.stopMedia();
         }
-        new Handler().postDelayed(new Runnable() {
+        if (!isDestroyed()) {
+            playAudio(audioList.get(getCurrentSong()).getData());
+        }
+        /*new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (!isDestroyed()) {
                     playAudio(audioList.get(getCurrentSong()).getData());
                 }
             }
-        }, DELAY_TIME);
+        }, DELAY_TIME);*/
     }
 }

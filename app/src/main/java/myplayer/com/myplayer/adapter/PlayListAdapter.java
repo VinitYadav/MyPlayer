@@ -24,7 +24,7 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
 
     private ArrayList<Audio> mList;
     private Activity mActivity;
-    private int selected = 0;
+    public int selected = 0;
 
     public PlayListAdapter(Activity activity, ArrayList<Audio> list) {
         this.mList = list;
@@ -59,6 +59,13 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
     }
 
     /**
+     * Get audio list
+     */
+    public ArrayList<Audio> getList() {
+        return mList;
+    }
+
+    /**
      * Set play pause icon on current playing song
      */
     public void setPlayPause(boolean flag) {
@@ -82,6 +89,55 @@ public class PlayListAdapter extends RecyclerView.Adapter<PlayListAdapter.ViewHo
                                 (TimeUnit.MILLISECONDS.toMinutes(temp))
         );
         return time;
+    }
+
+    /**
+     * When click on next change play pause of current list
+     */
+    public void clickPreviousNext(int which) {
+        int temp = 0;
+        boolean flag = false;
+        switch (which) {
+            case 1: // Previous
+                if (selected > 0) {
+                    temp = selected - 1;
+                    flag = true;
+                }
+                break;
+            case 2: // Next
+                if (selected < mList.size()) {
+                    temp = selected + 1;
+                    flag = true;
+                }
+                break;
+        }
+
+        if (flag) {
+            if (mList.get(temp).isSelect()) {
+                mList.get(temp).setSelect(false);
+            } else {
+                mList.get(temp).setSelect(true);
+            }
+            if (mList.get(selected).isSelect()) {
+                mList.get(selected).setSelect(false);
+            } else {
+                mList.get(selected).setSelect(true);
+            }
+            notifyItemChanged(selected);
+            notifyItemChanged(temp);
+            selected = temp;
+        }
+    }
+
+    /**
+     * Set play pause when song change
+     */
+    public void setIsSelect(int position) {
+        mList.get(position).setSelect(true);
+        mList.get(selected).setSelect(false);
+        notifyItemChanged(selected);
+        notifyItemChanged(position);
+        selected = position;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

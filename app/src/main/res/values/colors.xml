@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#26262E</color>
-    <color name="colorPrimaryDark">#26262E</color>
+    <color name="colorPrimary">#3C4076</color>
+    <color name="colorPrimaryDark">#242646</color>
     <color name="colorAccent">#ffffff</color>
-    <color name="gradient">#c40024</color>
+    <color name="gradient">#833E6C</color>
     <color name="white">#ffffff</color>
+    <color name="floating_color">#e65a44</color>
+    <color name="purple_color">#833E6C</color>
 </resources>
